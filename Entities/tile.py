@@ -15,7 +15,7 @@ class Tile(Entity):
     model = db.models.Tile
 
     def __init__(self, dbTile):
-        self.id = dbTile.id
+        self.model_id = dbTile.id
         self.name = dbTile.name
         self.description = dbTile.description
         self.x = dbTile.x
@@ -24,15 +24,13 @@ class Tile(Entity):
         self.plane = dbTile.plane
         self.properties = dbTile.properties
 
-        self.db = dbTile
-
         self.occupants = []
         self.contents = []
 
-        mud.tiles[self.id] = self
+        mud.tiles[self.model_id] = self
 
     @staticmethod
-    def preload(dbTile):
+    def preload(dbTile, **ignored):
         if dbTile.id in mud.tiles:
             return mud.tiles[dbTile.id]
 
@@ -56,4 +54,4 @@ class Tile(Entity):
         return Point(self.x, self.y, self.z)
 
     def __repr__(self):
-        return f'<Entity.Tile(id={self.id}, coord=({(self.x, self.y, self.z)}), name="{self.name}">'
+        return f'{self.__class__}(id={self.id}, coord=({(self.x, self.y, self.z)}), name="{self.name}")'

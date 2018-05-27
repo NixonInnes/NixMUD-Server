@@ -1,6 +1,7 @@
 from Actions.info import do_help, do_look
 from Entities.tile import Tile
 from Entities.npc import NPC
+from Mud import mud
 
 
 def do_goto(user, args):
@@ -35,3 +36,28 @@ def do_spawn(user, args):
     npc.move(user.tile.db)
     user.p.send_text(f'You wave your hands erratically and suddenly a {npc.name} appears!')
 
+
+def do_uinfo(user, args):
+    """
+    Display a specified users information
+    """
+    if not args or len(args) > 1:
+        do_help(user, ['uinfo'])
+        return
+    target = mud.get_user(args[0])
+    if not target:
+        user.p.send_text(f'Unable to find {args[0]}')
+        return
+    user.p.send_info(
+        title='User Info',
+        header=target.name,
+        info=[f'Name: {target.name}',
+              f'ID: {target.model_id}',
+              f'Flags: {target.flags}',
+              f'Aliases: {target.aliases}',
+              f'Race: {target.race.name}',
+              f'Class: {target.class_.name}',
+              f'Listening: {target.listening}',
+              f'Tile: {target.tile.name}'
+        ]
+    )

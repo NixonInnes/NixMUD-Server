@@ -3,6 +3,7 @@ import ssl
 from socketserver import ThreadingMixIn, TCPServer, BaseRequestHandler
 
 from Auth import auth
+from Mud import mud
 
 
 class SSLTCPServer(TCPServer):
@@ -73,6 +74,8 @@ class TCPHandler(BaseRequestHandler):
         self.request.sendall(msg.encode('utf-8'))
 
     def disconnect(self):
+        if self.user:
+            mud.rem_user(self.user.name)
         self.request.close()
 
     def __del__(self):

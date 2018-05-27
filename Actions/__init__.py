@@ -8,9 +8,10 @@ ACTIONS = {
     'goto': admin.do_goto,
     'help': info.do_help,
     'look': info.do_look,
+    'quit': user.do_quit,
     'save': user.do_save,
     'spawn': admin.do_spawn,
     'stop': combat.do_stop,
-    'quit': user.do_quit,
+    'uinfo': admin.do_uinfo,
     'who': info.do_who,
 }

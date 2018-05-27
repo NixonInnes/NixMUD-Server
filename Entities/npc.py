@@ -14,10 +14,10 @@ class NPC(Entity):
     model = db.models.NPC
 
     def __init__(self, dbNPC):
+        self.model_id = dbNPC.id
         self.name = dbNPC.name
         self.flags = dict(dbNPC.flags)
         self.tile = None
-        self.db = dbNPC
         make_tick(15, self.wander).start()
 
     def save(self):
@@ -37,5 +37,3 @@ class NPC(Entity):
         direction = random.choice(list(self.tile.exits.values()))
         self.move(direction)
 
-    def __repr__(self):
-        return f'<Entities.NPC(id={self.id}, name="{self.name}")>'

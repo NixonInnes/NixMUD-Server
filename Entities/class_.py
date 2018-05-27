@@ -9,6 +9,10 @@ class Class(Entity):
     """
     model = db.models.Class
 
-    @staticmethod
-    def preload(dbClass):
-        return dbClass
+    def __init__(self, dbClass):
+        self.model_id = dbClass.id
+        self.name = dbClass.name
+
+    def save(self):
+        self.db.name = self.name
+        db.session.commit()

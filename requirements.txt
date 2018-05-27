@@ -1,0 +1,4 @@
+pypiwin32
+pyOpenSSL
+sqlalchemy
+passlib

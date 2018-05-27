@@ -69,7 +69,7 @@ def register(client, username, password1, password2):
         client.send('That username is already taken, sorry!')
         return
     user = User.create(name=username, password=password1)
-    client.user = User.load(user)
+    client.user = User.load(user, dummy=True)
     client.state = client.states.RACE
     choose_race(client, -1)
 
@@ -107,10 +107,11 @@ def choose_class(client, msg):
     if msg not in classes:
         return
     client.user.class_ = Class.load(classes[msg])
-    client.user.save()
+
     client.send(f'You have chosen {client.user.class_.name}\r\n'
                 f'You have successfully registered.\r\n'
                 f'Please now login.')
+    client.user.save()
     client.state = client.states.UNAUTH
 
 

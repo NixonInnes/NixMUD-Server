@@ -37,13 +37,20 @@ class Entity(object):
         return db.session.query(cls.model).order_by(cls.model.id).all()
 
     @classmethod
-    def load(cls, dbModel):
-        preload = cls.preload(dbModel)
+    def load(cls, dbModel, **kwargs):
+        preload = cls.preload(dbModel, **kwargs)
         if preload:
             return preload
         else:
-            return cls(dbModel)
+            return cls(dbModel, **kwargs)
 
     @staticmethod
-    def preload(dbModel):
+    def preload(dbModel, **kwargs):
         return None
+
+    @property
+    def db(self):
+        return db.session.query(self.model).get(self.model_id)
+
+    def __repr__(self):
+        return f'{self.__class__}(id={self.model_id}, name="{self.name}")'

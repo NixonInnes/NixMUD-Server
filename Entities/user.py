@@ -2,6 +2,8 @@ from sqlalchemy import literal
 
 import Database as db
 from Entities.base import Entity
+from Entities.class_ import Class
+from Entities.race import Race
 from Entities.tile import Tile
 from Presenters import presenters
 from Mud import mud
@@ -14,22 +16,27 @@ class User(Entity):
     """
     model = db.models.User
 
-    def __init__(self, dbUser):
-        self.authed = True
+    def __init__(self, dbUser, dummy=False):
+        self.model_id = dbUser.id
         self.name = dbUser.name
         self.flags = dbUser.flags
         self.aliases = dbUser.aliases
-        self.listening = dbUser.listening
-        self.race = dbUser.race
-        self.class_ = dbUser.class_
-        self.db = dbUser
-        mud.add_user(self)
+        self.listening = ''.join(mud.channels.keys())
         self.tile = None
-        try:
-            self.move(dbUser.tile)
-        except AssertionError:
-            print(f'Couldn\'t load room for {self.name}')
-            self.move(db.session.query(db.models.Tile).get(1))
+        self.race = None
+        self.class_ = None
+
+        if not dummy:
+            self.race = Race.load(dbUser.race)
+            self.class_ = Class.load(dbUser.class_)
+            mud.add_user(self)
+
+            try:
+                self.move(dbUser.tile)
+            except AssertionError:
+                print(f'Couldn\'t load room for {self.name}, sending to default')
+                self.move(db.session.query(db.models.Tile).get(1))
+
         self.presenter = None
         self.disconnect = None
         self.ticks = []
@@ -43,7 +50,7 @@ class User(Entity):
         self.disconnect = client.disconnect
 
     @staticmethod
-    def preload(dbUser):
+    def preload(dbUser, **ignored):
         """
         Before the Database.models.User is loaded, mud.users is checked to make sure there isn't already an Entities.User
         loaded with that Database.models.User. If so, it is disconnected and that Entities.User instance is returned
@@ -51,12 +58,9 @@ class User(Entity):
         """
         if dbUser.name in mud.users:
             other = mud.get_user(dbUser.name)
-            if other:
-                other.p.send_text('You have signed in from another location!')
-                other.disconnect()
-                return other
-            else:
-                mud.rem_user(dbUser.name)
+            other.p.send_text('You have signed in from another location!')
+            other.disconnect()
+            return other
 
     def save(self):
         """
@@ -66,9 +70,12 @@ class User(Entity):
         self.db.flags = self.flags
         self.db.aliases = self.aliases
         self.db.listening = self.listening
-        self.db.race = self.race
-        self.db.class_ = self.class_
-        self.db.tile = self.tile.db
+        if self.race:
+            self.db.race = self.race.db
+        if self.class_:
+            self.db.class_ = self.class_.db
+        if self.tile:
+            self.db.tile = self.tile.db
         db.session.commit()
 
     def stop_ticks(self):
@@ -117,5 +124,3 @@ class User(Entity):
     def cha(self):
         return self.db.cha + self.race.cha_mod
 
-    def __repr__(self):
-        return f'<Entities.User(id={self.id}, username="{self.name}")>'
